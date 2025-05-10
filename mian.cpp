@@ -4,14 +4,13 @@
 #include <unistd.h>
 #include <cstring>
 namespace master {
-
+    int server_fd , new_socket;
+    struct sockaddr_in address;
+    int opt = 1;
+    int addrlen =sizeof(addrlen);
 }
 int main() {
     using namespace master;
-    int server_fd, new_socket;
-    struct sockaddr_in address;
-    int opt = 1;
-    int addrlen = sizeof(address);
     // 创建套接字
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("socket failed");
@@ -25,7 +24,7 @@ int main() {
     // 配置地址和端口
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY; // 监听所有网络接口
-    address.sin_port = htons(1);      // 监听端口 8080
+    address.sin_port = htons(10086);      // 监听端口 8080
     // 绑定套接字到地址和端口
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
         perror("bind failed");
