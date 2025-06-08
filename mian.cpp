@@ -35,7 +35,7 @@ int main() {
         perror("listen failed");
         exit(EXIT_FAILURE);
     }
-    std::cout << "Listening on port 1..." << std::endl;
+    std::cout << "开始监听端口10086" << std::endl;
     // 接受连接
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0) {
         perror("accept failed");
