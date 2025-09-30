@@ -21,7 +21,9 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 	filePath := filepath.Join(downloadDir, filepath.Clean(fileName))
 
 	// Security check to prevent directory traversal
-	if !filepath.HasPrefix(filePath, downloadDir) {
+	absDownloadDir, err := filepath.Abs(downloadDir)
+	absFilePath, err2 := filepath.Abs(filePath)
+	if err != nil || err2 != nil || len(absFilePath) < len(absDownloadDir) || absFilePath[:len(absDownloadDir)] != absDownloadDir {
 		http.Error(w, "Invalid file path", http.StatusBadRequest)
 		return
 	}
