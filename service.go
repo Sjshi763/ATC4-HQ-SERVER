@@ -58,14 +58,9 @@ func worker() {
 }
 
 func processRequests() {
-	for {
-		select {
-		case req := <-requestQueue:
-			// Get an available worker
-			workerChan := <-workerPool
-			// Send request to worker
-			workerChan <- req
-		}
+	for req := range requestQueue {
+		workerChan := <-workerPool
+		workerChan <- req
 	}
 }
 
