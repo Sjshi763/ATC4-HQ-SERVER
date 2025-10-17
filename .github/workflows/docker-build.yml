@@ -43,7 +43,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v4
         with:
-          context: ATC4-HQ-SERVER
+          context: .
           file: Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
