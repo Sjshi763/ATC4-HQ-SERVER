@@ -33,6 +33,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compute lowercase repo info
+        id: repoinfo
+        run: |
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+          repo=${GITHUB_REPOSITORY#*/}
+          echo "repo=${repo,,}" >> $GITHUB_OUTPUT
 
       - name: Build and push image
         uses: docker/build-push-action@v4
@@ -42,5 +48,5 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/${{ toLower(github.repository_owner) }}/${{ toLower(github.event.repository.name) }}:latest
-            ghcr.io/${{ toLower(github.repository_owner) }}/${{ toLower(github.event.repository.name) }}:${{ github.sha }}
+            ghcr.io/${{ steps.repoinfo.outputs.owner }}/${{ steps.repoinfo.outputs.repo }}:latest
+            ghcr.io/${{ steps.repoinfo.outputs.owner }}/${{ steps.repoinfo.outputs.repo }}:${{ github.sha }}
