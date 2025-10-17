@@ -25,7 +25,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
 
       - name: Debug: list repo (dispatch only)
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: github.event_name == 'workflow_dispatch'
         run: |
           echo "PWD: $(pwd)"
           echo "Listing root:" 
