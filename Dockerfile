@@ -21,8 +21,8 @@ WORKDIR /root/
 # Copy the pre-built binary from the builder stage
 COPY --from=builder /server .
 
-# Copy the 'files' directory which contains the files to be served
-COPY files ./files
+# Copy the 'files' directory which contains the files to be served from the builder stage
+COPY --from=builder /app/files ./files
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
