@@ -4,8 +4,12 @@ FROM golang:1.22-alpine AS builder
 WORKDIR /app
 
 # Copy go.mod and go.sum to download dependencies
-COPY go.mod ./
-RUN go mod download
+COPY go.mod go.sum ./
+# On alpine the image may not include git or CA certs required by `go mod download`.
+# Install minimal packages so module download works in CI (GitHub Actions runners).
+RUN apk add --no-cache git ca-certificates && \
+	update-ca-certificates || true && \
+	go mod download
 
 # Copy the rest of the source code
 COPY . .
