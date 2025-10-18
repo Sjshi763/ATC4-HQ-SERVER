@@ -16,6 +16,8 @@ RUN apk add --no-cache git ca-certificates && \
 # Copy the rest of the source code
 COPY . .
 
+# Ensure the files directory exists so multi-stage COPY won't fail if it's absent in the repo
+RUN mkdir -p files
 # Build the application for a static binary
 RUN CGO_ENABLED=0 GOOS=linux go build -o /server ./service.go
 
