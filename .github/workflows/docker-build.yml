@@ -12,22 +12,53 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Build Docker image
+      - name: Build Docker image (buildx + load)
         run: |
-          docker build -t atc4-hq-server .
+          # use buildx and --load so the resulting image is available to local docker commands
+          docker buildx build --load -t atc4-hq-server .
 
-      - name: Create container and extract binary
+      - name: Create container and extract binary (debug)
+        shell: bash
         run: |
-          # create a temporary container from the image and copy out build artifacts
-          CONTAINER_ID=$(docker create atc4-hq-server)
+          set -euxo pipefail
+          echo "Images on runner:" && docker images
+          # create a named temporary container from the image so it's easier to inspect
+          CN_NAME=atc4_temp_$RANDOM
+          CONTAINER_ID=$(docker create --name $CN_NAME atc4-hq-server)
+          echo "Created container: $CONTAINER_ID (name=$CN_NAME)"
+          echo "Container inspect:" && docker inspect $CONTAINER_ID || true
+
+          echo "Listing root of final image:" 
+          docker run --rm atc4-hq-server ls -la / || true
+          echo "Listing /root in final image:" 
+          docker run --rm atc4-hq-server ls -la /root || true
+          echo "Listing /files in final image (if exists):" 
+          docker run --rm atc4-hq-server ls -la /files || true
+
           mkdir -p artifacts
-          # copy binary if present
-          docker cp $CONTAINER_ID:/server ./artifacts/ 2>/dev/null || true
-          # copy files directory if present
-          docker cp $CONTAINER_ID:/files ./artifacts/files 2>/dev/null || true
-          docker rm $CONTAINER_ID
+          # attempt copies from possible locations in final image
+          echo "Listing /root before copy:" && docker run --rm atc4-hq-server ls -la /root || true
+          if docker cp $CONTAINER_ID:/root/server ./artifacts/ 2>/dev/null; then
+            echo "/root/server copied"
+          elif docker cp $CONTAINER_ID:/server ./artifacts/ 2>/dev/null; then
+            echo "/server copied"
+          else
+            echo "no server binary found in container"
+          fi
 
-      - name: Upload build artifact
+          if docker cp $CONTAINER_ID:/root/files ./artifacts/files 2>/dev/null; then
+            echo "/root/files copied"
+          elif docker cp $CONTAINER_ID:/files ./artifacts/files 2>/dev/null; then
+            echo "/files copied"
+          else
+            echo "no files dir found in container"
+          fi
+
+          echo "Artifacts folder contents:" && ls -la artifacts || true
+          # cleanup
+          docker rm $CONTAINER_ID || true
+
+      - name: Upload build artifact (if any)
         uses: actions/upload-artifact@v4
         with:
           name: atc4-hq-server-artifacts
