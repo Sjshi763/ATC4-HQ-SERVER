@@ -4,7 +4,9 @@ FROM golang:1.22-alpine AS builder
 WORKDIR /app
 
 # Copy go.mod and go.sum to download dependencies
-COPY go.mod go.sum ./
+# Copy only go.mod. If go.sum doesn't exist yet, copying it will fail on some build systems (CI).
+# `go mod download` will create go.sum when needed.
+COPY go.mod ./
 # On alpine the image may not include git or CA certs required by `go mod download`.
 # Install minimal packages so module download works in CI (GitHub Actions runners).
 RUN apk add --no-cache git ca-certificates && \
