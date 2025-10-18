@@ -15,3 +15,20 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t atc4-hq-server .
+
+      - name: Create container and extract binary
+        run: |
+          # create a temporary container from the image and copy out build artifacts
+          CONTAINER_ID=$(docker create atc4-hq-server)
+          mkdir -p artifacts
+          # copy binary if present
+          docker cp $CONTAINER_ID:/server ./artifacts/ 2>/dev/null || true
+          # copy files directory if present
+          docker cp $CONTAINER_ID:/files ./artifacts/files 2>/dev/null || true
+          docker rm $CONTAINER_ID
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: atc4-hq-server-artifacts
+          path: artifacts
